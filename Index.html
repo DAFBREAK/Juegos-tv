@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retro Arcade Web</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 1rem 1.5rem;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .catalog {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.5rem;
+      padding: 1.5rem;
+      flex: 1;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #334155;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+    .card img { width: 100%; height: 160px; object-fit: cover; }
+    .card-body { padding: 1rem; }
+    
+    #player-view {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 9999;
+      flex-direction: column;
+    }
+    .player-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0f172a;
+      padding: 0.75rem 1rem;
+    }
+    .btn-exit {
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #game-container { width: 100%; flex: 1; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🕹️ Retro Arcade Web</h1>
+    <label style="background: #0284c7; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">
+      📂 Cargar ROM (.zip) local
+      <input type="file" id="file-input" accept=".zip,.bin,.smc,.z64" style="display: none;">
+    </label>
+  </header>
+
+  <main class="catalog" id="catalog"></main>
+
+  <div id="player-view">
+    <div class="player-header">
+      <span id="current-title" style="color: #38bdf8; font-weight: 600;"></span>
+      <button class="btn-exit" onclick="closeGame()">✕ Salir del juego</button>
+    </div>
+    <div id="game-container"></div>
+  </div>
+
+  <script>
+    // Catálogo: usá rutas locales relativas en tu hosting (ej: roms/sf2.zip)
+    const gameList = [
+      {
+        title: "Street Fighter II",
+        system: "mame",
+        core: "arcade",
+        cover: "https://images.igdb.com/igdb/image/upload/t_cover_big/co20vo.jpg",
+        romUrl: "roms/sf2.zip" 
+      }
+    ];
+
+    const catalogEl = document.getElementById("catalog");
+    const playerView = document.getElementById("player-view");
+    const gameContainer = document.getElementById("game-container");
+    const currentTitle = document.getElementById("current-title");
+
+    gameList.forEach(game => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <img src="${game.cover}" alt="${game.title}" />
+        <div class="card-body">
+          <div style="font-weight: bold;">${game.title}</div>
+          <span style="font-size: 0.75rem; color: #38bdf8;">${game.system.toUpperCase()}</span>
+        </div>
+      `;
+      card.onclick = () => launchGame(game.core, game.romUrl, game.title);
+      catalogEl.appendChild(card);
+    });
+
+    // Carga de archivo manual para pruebas sin hosting
+    document.getElementById("file-input").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const objectUrl = URL.createObjectURL(file);
+      launchGame("arcade", objectUrl, file.name);
+    });
+
+    function launchGame(core, url, title) {
+      playerView.style.display = "flex";
+      currentTitle.innerText = title;
+      gameContainer.innerHTML = '<div id="game" style="width:100%; height:100%;"></div>';
+
+      window.EJS_player = "#game";
+      window.EJS_core = core;
+      window.EJS_gameUrl = url;
+      window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
+
+      const script = document.createElement("script");
+      script.id = "ejs-script";
+      script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
+      document.body.appendChild(script);
+    }
+
+    function closeGame() {
+      playerView.style.display = "none";
+      gameContainer.innerHTML = "";
+      const script = document.getElementById("ejs-script");
+      if (script) script.remove();
+      window.EJS_gameUrl = null;
+    }
+  </script>
+</body>
+</html>
