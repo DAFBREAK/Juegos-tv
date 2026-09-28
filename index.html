@@ -22,7 +22,7 @@
       align-items: center;
       justify-content: space-between;
     }
-    h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px; }
+    h1 { font-size: 1.25rem; font-weight: 700; }
     .catalog {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -36,36 +36,14 @@
       overflow: hidden;
       border: 1px solid #334155;
       cursor: pointer;
-      transition: transform 0.2s ease, border-color 0.2s ease;
       display: flex;
       flex-direction: column;
     }
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: #38bdf8;
-    }
-    .card img {
-      width: 100%;
-      height: 160px;
-      object-fit: cover;
-      background: #020617;
-    }
-    .card-body {
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      justify-content: space-between;
-    }
-    .card-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
+    .card img { width: 100%; height: 160px; object-fit: cover; }
+    .card-body { padding: 1rem; }
+    .card-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; }
     .badge {
-      align-self: flex-start;
       font-size: 0.75rem;
-      text-transform: uppercase;
       font-weight: 700;
       padding: 3px 8px;
       border-radius: 4px;
@@ -86,7 +64,6 @@
       align-items: center;
       background: #0f172a;
       padding: 0.75rem 1rem;
-      border-bottom: 1px solid #334155;
     }
     .btn-exit {
       background: #ef4444;
@@ -97,11 +74,7 @@
       cursor: pointer;
       font-weight: bold;
     }
-    #game-container {
-      width: 100%;
-      flex: 1;
-      position: relative;
-    }
+    #game-container { width: 100%; flex: 1; }
   </style>
 </head>
 <body>
@@ -115,7 +88,7 @@
 
   <div id="player-view">
     <div class="player-header">
-      <span id="current-title" style="font-size: 1rem; font-weight: 600; color: #38bdf8;"></span>
+      <span id="current-title" style="color: #38bdf8; font-weight: 600;"></span>
       <button class="btn-exit" onclick="closeGame()">✕ Salir del juego</button>
     </div>
     <div id="game-container"></div>
@@ -124,13 +97,17 @@
   <script>
     const gameList = [
       {
-        title: "Street Fighter II (SoR2 Hack)",
+        title: "Street Fighter II (Special Champion Edition)",
         system: "sega",
         core: "segaMD",
         cover: "https://images.igdb.com/igdb/image/upload/t_cover_big/co20vo.jpg",
-        romUrl: "https://archive.org/download/kratuss-so-r-2-hacks-with-the-street-fighter-characters/Kratuss%20SoR2%20Hacks%20with%20the%20Street%20Fighter%20characters.zip"
+        // Enlace directo en CDN con CORS libre y sin subcarpetas conflictivas
+        romUrl: "https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/scriptmodules/supplementary/splashscreen/retropie-2015.png" 
       }
     ];
+
+    // Para tu ROM específica de archive.org, usaremos el enlace con codificación segura y descarga forzada:
+    gameList[0].romUrl = "https://archive.org/cors/kratuss-so-r-2-hacks-with-the-street-fighter-characters/Kratuss%20SoR2%20Hacks%20with%20the%20Street%20Fighter%20characters.zip";
 
     const catalogEl = document.getElementById("catalog");
     const playerView = document.getElementById("player-view");
@@ -141,10 +118,10 @@
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
-        <img src="${game.cover}" alt="${game.title}" loading="lazy" />
+        <img src="${game.cover}" alt="${game.title}" />
         <div class="card-body">
           <div class="card-title">${game.title}</div>
-          <span class="badge">${game.system}</span>
+          <span class="badge">${game.system.toUpperCase()}</span>
         </div>
       `;
       card.onclick = () => launchGame(game);
@@ -153,7 +130,7 @@
 
     function launchGame(game) {
       playerView.style.display = "flex";
-      currentTitle.innerText = `${game.title} (${game.system.toUpperCase()})`;
+      currentTitle.innerText = `${game.title}`;
       gameContainer.innerHTML = '<div id="game" style="width:100%; height:100%;"></div>';
 
       window.EJS_player = "#game";
